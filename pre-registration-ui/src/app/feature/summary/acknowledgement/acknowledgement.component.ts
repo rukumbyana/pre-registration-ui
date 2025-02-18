@@ -610,7 +610,9 @@ getPRNResponse(){
     if (response.response != null) {
         this.PRN = response.response.data.prn;
         this.amount = response.response.data.amount;
+        
             } 
+         
     else if (response.errors && Array.isArray(response.errors)) {
             const body = {
             case: "PRN-ERRORS",
@@ -621,15 +623,16 @@ getPRNResponse(){
             width: "500px",
             data: body
           });
-          console.error('Error:', response.errors[0].message);
+          //console.error('Error:', response.errors[0].message);
         }
     },
     (error) => {
-                  this.PRNerrorMessage = error.message || JSON.stringify(error);  
+    
+                  this.PRNerrorMessage = error.error.errors[0].message
                   const body = {
                   case: "PRN-CONNECT-ERRORS",
-                  title: "PRN Connection Error",
-                  message: "Unable to connect to the server: " + this.PRNerrorMessage + "\n\nMake sure to pay in any Bank before proceeding to NIRA office"
+                  title: "PRN Generation Error",
+                  message: this.PRNerrorMessage + "\n\nMake sure to pay from any Bank before proceeding to NIRA office"
                   };
                   this.dialog.open(DialougComponent, {
                   width: "500px",
@@ -641,7 +644,7 @@ getPRNResponse(){
 
 generatePaymentRefNum(demographicData: any) {
   let surname;
-  if(this.userService==appConstants.USER_SERVICE.UPDATE){
+  if(this.userService==appConstants.USER_SERVICE.UPDATE || appConstants.USER_SERVICE.REPLACEMENT){
     surname = demographicData.surnameCop[0].value;
   }
   else{
@@ -663,9 +666,9 @@ generatePaymentRefNum(demographicData: any) {
                  NIN: nin,
                  fullName: surname
                  };
-                  console.log(this.requestBody);
+                  // console.log("consoled from generatePaymentRefNum",this.requestBody);
                   this.getPRNResponse();
-                  console.log("this is from the general update");
+                  // console.log("this is from the general update");
              }
          else if((demographicData.removingName==="Y"|| demographicData.addingName==="Y"||demographicData.completeChangeofName==="Y" ||demographicData.changeOfDateOfBirth==="Y" ||demographicData.changeInPlaceOfResidence==="Y") && demographicData.changeReasonNameChange[0].value === "SPLC" )
               {
@@ -674,10 +677,11 @@ generatePaymentRefNum(demographicData: any) {
              NIN: nin,
              fullName: surname
              };
+             console.log("consoled from generatePaymentRefNum",this.requestBody);
              if (this.requestBody.fullName &&  this.requestBody.NIN &&  this.requestBody.service) {
                   console.log(this.requestBody);
                  this.getPRNResponse();
-                 console.log("this is from spelling error");
+                //  console.log("this is from spelling error");
                
                } 
              }
@@ -689,8 +693,8 @@ else if(desiredService ===appConstants.USER_SERVICE.REPLACEMENT){
         if(demographicData.userServiceTypeReplacement[0].value==="LOST"){
 
           this.requestBody = {
-            service: appConstants.TAX_HEADS.REPLACEMENT  ,
-            NIN: nin,
+            service: appConstants.TAX_HEADS.REPLACEMENT,
+            NIN: nin !== undefined ? nin : null,
             fullName: surname
           };
             this.getPRNResponse();
@@ -698,11 +702,10 @@ else if(desiredService ===appConstants.USER_SERVICE.REPLACEMENT){
         else if (demographicData.userServiceTypeReplacement[0].value==="DMG"){
           this.requestBody = {
             service: appConstants.TAX_HEADS.DAMAGED_CARD ,
-            NIN: nin,
+            NIN: nin !== undefined ? nin : null,
             fullName: surname
           };
-          console.log(this.requestBody.service);
-          this.getPRNResponse();
+           this.getPRNResponse();
         }
 } 
 }

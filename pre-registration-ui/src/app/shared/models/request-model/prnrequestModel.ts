@@ -1,5 +1,5 @@
 export interface PRNRequestModel{
   service:string;
-  NIN:string;
+  NIN?:string;
   fullName:string;
   }
