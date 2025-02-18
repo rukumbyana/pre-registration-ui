@@ -216,6 +216,8 @@ export const userServiceType = "userServiceType";
 
 export const userServiceTypeCop = "userServiceTypeCop";
 
+export const declaration = "declarationCheckBox";
+
 export const copAddName = "addingName";
 export const copChangeNameOrder = "changeOrderOfNames";
 export const copCompleChange = "completeChangeofName";
@@ -226,7 +228,8 @@ export const USER_SERVICE = {
   RENEWAL : "RENEWAL",
   UPDATE : "UPDATE",
   FIRSTID: "FIRSTID",
-  REPLACEMENT: "LOST"
+  REPLACEMENT: "LOST",
+  NEW : "NEW"
 };
 
 export const TAX_HEADS = {
@@ -245,6 +248,11 @@ export const USER_SERVICETYPE = {
 export const NOTIFICATION_OF_CHANGE = {
   userServiceTypeCop : "notificationOfChange",
   nameFields : "nocNameFields",
+  removeFields: "nocRemoveFields",
   isCardRequiredCop : "cardRequiredCop",
   cardOptionalCopServiceType : "cardOptionalCop"
 }
+
+export const APPLICANT_PLACE_OF_RESIDENCE_YEARS_LIVED_FIELD = "applicantPlaceOfResidenceYearsLived";
+
+export const DATE_OF_BIRTH_FIELD = 'dateOfBirth';

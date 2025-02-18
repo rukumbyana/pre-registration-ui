@@ -13,6 +13,7 @@ import {
   FormControl,
   Validators,
   AbstractControl,
+  ValidationErrors,
 } from "@angular/forms";
 import { MatDialog } from "@angular/material";
 import { TranslateService } from "@ngx-translate/core";
@@ -109,18 +110,94 @@ export class DemographicComponent extends FormDeactivateGuardService
   filledFieldCount: number;
   filledFields: Number;
 
+
   setStep(index: number) {
     this.expStep = index;
   }
+///
 
-  nextStep() {
+  // nextStep() {
+  //   this.expStep++;
+  // }
+
+  // prevStep() {
+  //   this.expStep--;
+  // }
+////
+nextStep() {
+  let maxSteps = 23; // Set the total number of steps
+  do {
     this.expStep++;
-  }
+  } while (
+    this.expStep <= maxSteps && 
+    !this.isStepVisible(this.expStep) // Skip hidden steps
+  );
+}
 
-  prevStep() {
+prevStep() {
+  do {
     this.expStep--;
-  }
+  } while (
+    this.expStep >= 0 && 
+    !this.isStepVisible(this.expStep) // Skip hidden steps
+  );
+}
 
+isStepVisible(step: number): boolean {
+  switch (step) {
+    case 0:
+      return true; // Always visible
+    case 1:
+      return this.isCopService() || this.isGetFirstId() || this.isReplacement();
+    case 2:
+      return this.isCopService();
+    case 3:
+      return this.isCopService();
+    case 4:
+      return !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 5:
+      return !this.isCopService() && !this.isGetFirstId() && !this.isReplacement(); // Replace with actual condition
+    case 6:
+      return !this.isRenewalService() && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 7:
+      return !this.isRenewalService() && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 8:
+      return !this.isRenewalService() && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 9:
+      return !this.isRenewalService() && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 10:
+      return !this.isRenewalService() && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 11:
+      return !this.isRenewalService() && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 12:
+      return !this.isRenewalService()  && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 13:
+      return !this.isRenewalService() && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 14:
+      return !this.isRenewalService() && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 15:
+      return !this.isRenewalService() && !this.isCopService() && !this.isGetFirstId() && !this.isReplacement();
+    case 16:
+      return this.isCopService();
+    case 17:
+      return this.isReplacement();
+    case 18:
+      return !this.isRenewalService() && !this.isGetFirstId() && !this.isReplacement();
+    case 19:
+      return this.isCopService();
+    case 20:
+      return this.isCopService() && this.isRenewalService();
+    case 21:
+      return this.isGetFirstId();
+    case 22:
+      return true;
+    default:
+      return false;
+  }
+}
+
+
+//////
   userService: string = "";
   userServiceType: string = "";
   //userServiceTypeCop: string = "";
@@ -130,12 +207,14 @@ export class DemographicComponent extends FormDeactivateGuardService
   removingName: boolean;
   notificationOfChangeServiceType = [];
   notificationOfChangeNameFields = [];
-  ageCop: number;
+  notificationOfChangeRemoveFields = [];
+  // ageCop: string;
   agePattern: string;
   defaultDay: string;
   defaultMonth: string;
   defaultLocation: string;
   currentAge: string = "";
+  currentAgeCop: string = "";
   isNewApplicant = false;
   checked = true;
   dataUploadComplete = true;
@@ -175,6 +254,7 @@ export class DemographicComponent extends FormDeactivateGuardService
   isSubmitted = false;
   _moment = moment;
   @ViewChild("age") age: ElementRef;
+  @ViewChild("ageCop") ageCop: ElementRef;
   private _keyboardRef: MatKeyboardRef<MatKeyboardComponent>;
   @ViewChildren("keyboardRef", { read: ElementRef })
   private _attachToElementMesOne: any;
@@ -182,7 +262,9 @@ export class DemographicComponent extends FormDeactivateGuardService
   identityData = [];
   uiFields = [];
   alignmentGroups = [];
+  copAlignmentGroups = [];
   uiFieldsForAlignmentGroups = [];
+  uiFieldsForAlignmentGroupsCop=[];
   uiFieldsWithTransliteration = [];
   jsonRulesEngine = new Engine();
   primaryuserForm = false;
@@ -203,7 +285,7 @@ export class DemographicComponent extends FormDeactivateGuardService
   showChangeDataCaptureLangBtn = false;
   localeDtFormat = "";
   serverDtFormat = "YYYY/MM/DD";
-
+  userAge
   @ViewChild("singleSelect") singleSelect: MatSelect;
   /* Subject that emits when the component has been destroyed. */
   protected _onDestroy = new Subject<void>();
@@ -412,7 +494,6 @@ export class DemographicComponent extends FormDeactivateGuardService
     if (this.dataModification) {
       await this.getFieldAndData();
     }
-
   }
 
   async getFieldAndData() {
@@ -763,8 +844,8 @@ export class DemographicComponent extends FormDeactivateGuardService
             response[appConstants.RESPONSE]["idSchemaVersion"];
 
             //LOCAL
-          //  const fieldDefinitions = await this.loadFieldDefinitions();
-          //  this.identityData.push(...fieldDefinitions);
+            //const fieldDefinitions = await this.loadFieldDefinitions();
+            //this.identityData.push(...fieldDefinitions);
 
           if (Array.isArray(locationHeirarchiesFromJson[0])) {
             this.locationHeirarchies = locationHeirarchiesFromJson;
@@ -793,6 +874,7 @@ export class DemographicComponent extends FormDeactivateGuardService
           //set the alignmentGroups for UI rendering, by default, 3 containers with multilang controls will appear in a row
           //you can update this by combining controls using "alignmentGroup", "containerStyle" and "headerStyle" in UI specs.
           this.setAlignmentGroups();
+          this.setCopAlignmentGroups();
           this.dynamicFields = this.uiFields.filter(
             (fields) =>
               (fields.controlType === "dropdown" ||
@@ -835,6 +917,20 @@ export class DemographicComponent extends FormDeactivateGuardService
           this.alignmentGroups.push(obj.alignmentGroup);
         }
         this.uiFieldsForAlignmentGroups[obj.alignmentGroup].push(obj);
+      }
+    });
+  }
+
+  setCopAlignmentGroups() {
+    let rowIndex = 0;
+    this.uiFields.forEach((obj, index) => {
+      if (obj.copAlignmentGroup && obj.copAlignmentGroup != null) {
+        if (!this.copAlignmentGroups.includes(obj.copAlignmentGroup)) {
+          this.uiFieldsForAlignmentGroupsCop[obj.copAlignmentGroup] = [];
+          this.copAlignmentGroups.push(obj.copAlignmentGroup);
+          rowIndex = rowIndex + 1;
+        }
+        this.uiFieldsForAlignmentGroupsCop[obj.copAlignmentGroup].push(obj);
       }
     });
   }
@@ -942,7 +1038,7 @@ export class DemographicComponent extends FormDeactivateGuardService
               else if (validatorItem.type === "beforeApplicantDOB") {
                 let inputDate = new Date(val);
                 let currentDate = new Date();
-                const dateOfBirthValue = this.userForm.controls["dateOfBirth"].value;
+                const dateOfBirthValue = this.userForm.controls[this.dateOfBirthFieldId].value;
                 const applicantDOB = new Date(dateOfBirthValue);
                 currentDate.setHours(0, 0, 0, 0); // Clear time for accurate comparison
                 if (inputDate > currentDate || applicantDOB <= inputDate) {
@@ -1130,9 +1226,12 @@ export class DemographicComponent extends FormDeactivateGuardService
       } else if (i == 0 && myFlag == false) {
         controlId = uiField.id;
 
-        if (controlId == "dateOfBirth") {
+        if (controlId == this.dateOfBirthFieldId) {
           controlId = controlId + "_dateCtrl"
           this.currentAge = null;
+        } else if (controlId == this.dateOfBirthFieldIdCop) {
+          controlId = controlId + "_dateCtrl"
+          this.currentAgeCop = null;
         }
         this.userForm.controls[controlId].reset();
 
@@ -1174,6 +1273,7 @@ export class DemographicComponent extends FormDeactivateGuardService
         }
       }
     }
+ 
     const identityFormData = this.createIdentityJSONDynamic(true, selectedFieldId);
     //if(selectedFieldId==appConstants.userServiceTypeCop){
       //this.userServiceTypeCop=this.userForm.controls[selectedFieldId].value;
@@ -1207,14 +1307,19 @@ export class DemographicComponent extends FormDeactivateGuardService
 
     let isChild = false;
     let currentAge = null;
+    let currentAgeCop = null;
     if (
       this.dateOfBirthFieldId != "" &&
       identityFormData.identity[this.dateOfBirthFieldId]
     ) {
       const dateOfBirthDt = identityFormData.identity[this.dateOfBirthFieldId];
+      let birth = identityFormData.identity[this.dateOfBirthFieldId];
+        let formattedBirth = birth.split('/').reverse().join('/');
+        this.userForm.controls[this.dateOfBirthFieldId].setValue(formattedBirth);
       let calcAge = this.calculateAge(dateOfBirthDt);
       if (calcAge !== "" && Number(calcAge) > -1) {
         currentAge = Number(calcAge);
+        this.userAge = currentAge;
       }
       const ageToBeAdult = this.config[
         appConstants.CONFIG_KEYS.mosip_adult_age
@@ -1231,16 +1336,21 @@ export class DemographicComponent extends FormDeactivateGuardService
       identityFormData.identity[this.dateOfBirthFieldIdCop]
     ){
       const dateOfBirthDt = identityFormData.identity[this.dateOfBirthFieldIdCop];
-      let calcAge = this.calculateAge(dateOfBirthDt);
-      if (calcAge !== "" && Number(calcAge) > -1) {
-        currentAge = Number(calcAge);
+        let birthCop = identityFormData.identity[this.dateOfBirthFieldIdCop];
+        let formattedBirthCop = birthCop.split('/').reverse().join('/');
+        this.userForm.controls[this.dateOfBirthFieldIdCop].setValue(formattedBirthCop);
+
+      let calcAgeCop = this.calculateAge(dateOfBirthDt);
+      if (calcAgeCop !== "" && Number(calcAgeCop) > -1) {
+        currentAgeCop = Number(calcAgeCop);
+        this.userAge=currentAgeCop
       }
       const ageToBeAdult = this.config[
         appConstants.CONFIG_KEYS.mosip_adult_age
       ];
       if (
-        Number(this.currentAge) > -1 &&
-        Number(this.currentAge) <= Number(ageToBeAdult)
+        Number(this.currentAgeCop) > -1 &&
+        Number(this.currentAgeCop) <= Number(ageToBeAdult)
       ) {
         isChild = true;
       }
@@ -1251,12 +1361,20 @@ export class DemographicComponent extends FormDeactivateGuardService
         ...identityFormData.identity,
         isChild: isChild,
         age: currentAge,
+        ageCop: currentAgeCop,
       },
     };
-
-  
+    
+    
     //minor restriction for byreg and bynat
-    let applicantAge = Number(this.currentAge);
+    let applicantAge = null;
+    let applicantAgeCop = null;
+    if(selectedFieldId == this.dateOfBirthFieldId){
+      applicantAge = Number(this.currentAge);
+    } else if(selectedFieldId == this.dateOfBirthFieldIdCop){
+      applicantAgeCop = Number(this.currentAgeCop);
+    }
+
     if(selectedFieldId !="" && selectedFieldId==this.dateOfBirthFieldId){
       if(this.userServiceType==appConstants.USER_SERVICETYPE.BYNATURALISATION || this.userServiceType==appConstants.USER_SERVICETYPE.BYREGISTRATION){
         if(applicantAge<18 && applicantAge!=null){
@@ -1269,7 +1387,7 @@ export class DemographicComponent extends FormDeactivateGuardService
       } 
     }if(selectedFieldId !="" && selectedFieldId==this.dateOfBirthFieldIdCop){
       if(this.userService==appConstants.USER_SERVICE.FIRSTID){
-        if(applicantAge<16 && applicantAge!=null){
+        if(applicantAgeCop<16 && applicantAgeCop!=null){
           this.userForm.controls[selectedFieldId].setValue("");
           this.userForm.controls[selectedFieldId].markAsTouched();
           this.userForm.controls[selectedFieldId].setErrors({
@@ -1278,7 +1396,11 @@ export class DemographicComponent extends FormDeactivateGuardService
         }
       } 
     }
-    
+    if(selectedFieldId !="" && selectedFieldId==appConstants.declaration){
+      if(this.userForm.controls[selectedFieldId].value === false){
+        this.userForm.controls[selectedFieldId].reset();
+      }
+    }
     //following code added malay
 
     /** Execute processShowHideFields on first run to make all fields visible. */
@@ -1353,11 +1475,17 @@ export class DemographicComponent extends FormDeactivateGuardService
       await this.processChangeActions(selectedFieldId).then(async () => {
       });
     }
-    //console.log(this.userForm.value);
+    if (selectedFieldId === appConstants.APPLICANT_PLACE_OF_RESIDENCE_YEARS_LIVED_FIELD) {
+      this.validateYearsLived(selectedFieldId);
+  }
+
+    if (selectedFieldId === appConstants.DATE_OF_BIRTH_FIELD) {
+      this.validateYearsLived(appConstants.APPLICANT_PLACE_OF_RESIDENCE_YEARS_LIVED_FIELD);
+    }
   }
 
 
-  //malay
+  
   processShowHideFields = async (formIdentityData: any, subField?: any) => {
     return new Promise<void>((resolve, reject) => {
       if (subField) {
@@ -1788,6 +1916,11 @@ export class DemographicComponent extends FormDeactivateGuardService
                     const notificationOfChangeNameFields = fieldValArray.map(item => item.value);
                     this.notificationOfChangeNameFields = notificationOfChangeNameFields;
                   }
+                  else if(res.name==appConstants.NOTIFICATION_OF_CHANGE.removeFields){
+                    const fieldValArray = res["fieldVal"];
+                    const notificationOfChangeRemoveFields = fieldValArray.map(item => item.value);
+                    this.notificationOfChangeRemoveFields = notificationOfChangeRemoveFields;
+                  }
                 });
               });
               let totalPages = response[appConstants.RESPONSE]["totalPages"];
@@ -1874,7 +2007,7 @@ export class DemographicComponent extends FormDeactivateGuardService
                 this.setDateOfBirth(control.id);
               }
               if (control.controlType === "ageDateCop") {
-                this.setDateOfBirth(control.id);
+                this.setDateOfBirthCop(control.id);
               }
               if (control.controlType === "date") {
                 this.setDate(control.id);
@@ -1987,12 +2120,29 @@ export class DemographicComponent extends FormDeactivateGuardService
   }
 
   setDateOfBirth(controlId: string) {
-    const dateValStr = this.user.request.demographicDetails.identity[controlId];
+    let formattedBirth = this.user.request.demographicDetails.identity[controlId];
+    formattedBirth = formattedBirth.split('/').reverse().join('/');
+    const dateValStr = formattedBirth;
     const dateMomentObj = moment(dateValStr, this.serverDtFormat, true);
     if (dateMomentObj.isValid()) {
       let calcAge = this.calculateAge(dateValStr).toString();
       if (calcAge !== "" && Number(calcAge) > -1) {
         this.currentAge = calcAge;
+      }
+      this.userForm.controls[controlId].setValue(dateValStr);
+      this.userForm.controls[`${controlId}_dateCtrl`].setValue(dateMomentObj);
+    }
+  }
+  
+  setDateOfBirthCop(controlId: string) {
+    let formattedBirth = this.user.request.demographicDetails.identity[controlId];
+    formattedBirth = formattedBirth.split('/').reverse().join('/');
+    const dateValStr = formattedBirth;
+    const dateMomentObj = moment(dateValStr, this.serverDtFormat, true);
+    if (dateMomentObj.isValid()) {
+      let calcAgeCop = this.calculateAge(dateValStr).toString();
+      if (calcAgeCop !== "" && Number(calcAgeCop) > -1) {
+        this.currentAgeCop = calcAgeCop;
       }
       this.userForm.controls[controlId].setValue(dateValStr);
       this.userForm.controls[`${controlId}_dateCtrl`].setValue(dateMomentObj);
@@ -2023,18 +2173,21 @@ export class DemographicComponent extends FormDeactivateGuardService
       appConstants.CONFIG_KEYS.mosip_id_validation_identity_age
     ];
     const ageRegex = new RegExp(this.agePattern);
-    const ageVal = this.age.nativeElement.value;
-    if (ageVal) {
-      if (
-        ageRegex.test(ageVal) &&
-        Number(ageVal) > -1 &&
-        Number(ageVal) < 150
-      ) {
-        this.currentAge = ageVal;
+
+    if (dateFieldId === this.dateOfBirthFieldId) {
+      const ageVal = this.age.nativeElement.value;
+      if (ageVal) {
+        if (
+          ageRegex.test(ageVal) &&
+           Number(ageVal) > -1 &&
+            Number(ageVal) < 150
+          ) {
+          this.currentAge = ageVal;
+        }
+  
         const now = new Date();
-        const calulatedYear = now.getFullYear() - Number(this.currentAge);
-        const newDate =
-          calulatedYear + "/" + this.defaultMonth + "/" + this.defaultDay;
+        const calculatedYear = now.getFullYear() - Number(ageVal);
+        const newDate = `${calculatedYear}/${this.defaultMonth}/${this.defaultDay}`;
         const newMomentObj = moment(newDate, this.serverDtFormat);
         this.userForm.controls[dateFieldId].setValue(newDate);
         this.userForm.controls[`${dateFieldId}_dateCtrl`].setValue(
@@ -2045,12 +2198,44 @@ export class DemographicComponent extends FormDeactivateGuardService
           this.hasDobChangedFromChildToAdult(dateFieldId);
         }
       } else {
-        this.userForm.controls[dateFieldId].setValue("");
-        this.userForm.controls[dateFieldId].markAsTouched();
-        this.userForm.controls[dateFieldId].setErrors({
-          incorrect: true,
-        });
+        this.resetAgeFields(dateFieldId);
       }
+    }else if (dateFieldId === this.dateOfBirthFieldIdCop) {
+      const ageValCop = this.ageCop.nativeElement.value;
+      if (ageValCop) {
+        if (ageRegex.test(ageValCop) && Number(ageValCop) > -1 && Number(ageValCop) < 150) {
+          this.currentAgeCop = ageValCop;
+        }
+  
+        const now = new Date();
+        const calculatedYear = now.getFullYear() - Number(ageValCop);
+        const newDate = `${calculatedYear}/${this.defaultMonth}/${this.defaultDay}`;
+        const newMomentObj = moment(newDate, this.serverDtFormat);
+  
+        this.userForm.controls[dateFieldId].setValue(newDate);
+        this.userForm.controls[`${dateFieldId}_dateCtrl`].setValue(newMomentObj);
+        this.userForm.controls[dateFieldId].setErrors(null);
+  
+        if (this.dataModification) {
+          this.hasDobChangedFromChildToAdult(dateFieldId);
+        }
+      } else {
+        this.resetAgeFields(dateFieldId);
+      }
+    } 
+  }
+  
+  resetAgeFields(dateFieldId: string) {
+    this.userForm.controls[dateFieldId].setValue("");
+    this.userForm.controls[dateFieldId].markAsTouched();
+    this.userForm.controls[dateFieldId].setErrors({ incorrect: true });
+  
+    if (dateFieldId === this.dateOfBirthFieldId) {
+      this.currentAge = "";
+      this.age.nativeElement.value = "";
+    } else if (dateFieldId === this.dateOfBirthFieldIdCop) {
+      this.currentAgeCop = "";
+      this.ageCop.nativeElement.value = "";
     }
   }
 
@@ -2066,31 +2251,49 @@ export class DemographicComponent extends FormDeactivateGuardService
     if (newDtMomentObj && newDtMomentObj.isValid()) {
       newDtMomentObj.locale("en-GB");
       let formattedDt = newDtMomentObj.format(this.serverDtFormat);
-      let calcAge = this.calculateAge(formattedDt).toString();
-      if (calcAge !== "" && Number(calcAge) > -1) {
-        this.currentAge = calcAge;
-        this.age.nativeElement.value = this.currentAge;
+  
+      if (controlId === this.dateOfBirthFieldId) {
+        let calcAge = this.calculateAge(formattedDt).toString();
+        if (calcAge !== "" && Number(calcAge) > -1) {
+          this.currentAge = calcAge;
+          this.age.nativeElement.value = this.currentAge;
+        }
+
         this.userForm.controls[controlId].setValue(formattedDt);
         if (this.dataModification) {
           this.hasDobChangedFromChildToAdult(controlId);
         }
-      } else {
-        this.userForm.controls[controlId].setValue("");
-        this.userForm.controls[controlId].markAsTouched();
-        this.userForm.controls[controlId].setErrors({
-          incorrect: true,
-        });
-        this.currentAge = "";
-        this.age.nativeElement.value = "";
+      } else if(controlId === this.dateOfBirthFieldIdCop) {
+        let calcAgeCop = this.calculateAge(formattedDt).toString();
+        if (calcAgeCop !== "" && Number(calcAgeCop) > -1) {
+          this.currentAgeCop = calcAgeCop;
+          this.ageCop.nativeElement.value = this.currentAgeCop;
+        }
+
+        this.userForm.controls[controlId].setValue(formattedDt);
+  
+        if (this.dataModification) {
+          this.hasDobChangedFromChildToAdult(controlId);
+        }
+      }else {
+        this.resetDOBFields(controlId);
       }
     } else {
-      this.userForm.controls[controlId].setValue("");
-      this.userForm.controls[controlId].markAsTouched();
-      this.userForm.controls[controlId].setErrors({
-        incorrect: true,
-      });
+      this.resetDOBFields(controlId);
+    }
+  }
+  
+  resetDOBFields(controlId: string) {
+    this.userForm.controls[controlId].setValue("");
+    this.userForm.controls[controlId].markAsTouched();
+    this.userForm.controls[controlId].setErrors({ incorrect: true });
+  
+    if (controlId === this.dateOfBirthFieldId) {
       this.currentAge = "";
       this.age.nativeElement.value = "";
+    } else if (controlId === this.dateOfBirthFieldIdCop) {
+      this.currentAgeCop = "";
+      this.ageCop.nativeElement.value = "";
     }
   }
 
@@ -2845,7 +3048,7 @@ export class DemographicComponent extends FormDeactivateGuardService
     if (error) {
       let text;
       switch (error.error_name) {
-        case 'nameCopRequired': text = `Any one of the field in Update/Change Order of Name is required!`; break;
+        case 'nameCopRequired': text = `Any one of the field in Adding/removing of Name is required!`; break;
         case 'required': text = `${error.control_name}(${error.section_name}) is required!`; break;
         case 'pattern': text = `${error.control_name} has wrong pattern!`; break;
         case 'email': text = `${error.control_name} has wrong email format!`; break;
@@ -2871,7 +3074,14 @@ export class DemographicComponent extends FormDeactivateGuardService
         Object.keys(controlErrors).forEach(keyError => {
           let label = _this.uiFields.find(f => f.id == key);
           if (!label) label = _this.uiFields.find(f => f.id == key.replace(/_[a-zA-Z]+$/, ''));
-          let sectionName = label ? label.alignmentGroup : 'Unknown Section';
+          let sectionName;
+          if(this.userService==appConstants.USER_SERVICE.UPDATE && label.copAlignmentGroup)
+            sectionName = label ? label.copAlignmentGroup : 'Unknown Section';
+          else if(this.userService==appConstants.USER_SERVICE.FIRSTID && label.gfAlignmentGroup)
+            sectionName = label ? label.gfAlignmentGroup : 'Unknown Section';
+          else
+            sectionName = label ? label.alignmentGroup : 'Unknown Section';
+
           if (label != null) {
             errors.push({
               section_name: sectionName,
@@ -2885,7 +3095,7 @@ export class DemographicComponent extends FormDeactivateGuardService
     });
     return errors;
   }
-  
+
   getLocationNameFromFieldId = (fieldId) => {
     let filtered = this.uiFields.find(uiField => uiField.id == fieldId);
     let parentField = this.uiFields.filter(uiField => uiField.locationHierarchyLevel ==
@@ -2922,7 +3132,6 @@ export class DemographicComponent extends FormDeactivateGuardService
   }
 
   isByBirth(): boolean {
-    console.log(this.userServiceType);
     if (this.userServiceType === appConstants.USER_SERVICETYPE.BYBIRTH) {
       return true;
     }
@@ -2930,10 +3139,12 @@ export class DemographicComponent extends FormDeactivateGuardService
   }
 
   nameFieldsCopValidation() {
+    debugger
    // const nameFieldsUserServiceCopArr = this.notificationOfChangeServiceType;
     const nameFields = this.notificationOfChangeNameFields;
+    const nameFieldsRemove = this.notificationOfChangeRemoveFields;
     //if (nameFieldsUserServiceCopArr.includes(this.userServiceTypeCop)) {
-    if (this.copAddName) {
+    if (this.copAddName && this.userForm.valid) {
       const hasValue = nameFields.some((field) => {
         const namefieldCop = this.userForm.controls[field];
         return namefieldCop && namefieldCop.value && namefieldCop.value.trim() !== "";
@@ -2943,6 +3154,18 @@ export class DemographicComponent extends FormDeactivateGuardService
         this.userForm.setErrors({ invalidForm: true });
       }
     }
+    if (this.removingName && this.userForm.valid) {
+      const hasValidValue = nameFieldsRemove.some((field) => {
+        const removeFieldCop = this.userForm.controls[field];
+        return removeFieldCop && (removeFieldCop.value === true || removeFieldCop.value === "Y");
+      });
+    
+      if (!hasValidValue) {
+        this.userForm.setErrors({ invalidForm: true });
+      }
+    }
+    
+    
   }
 
   nameFieldsCopValidationError(): { control_name: string; error_name: string; error_value: boolean } | null {
@@ -2959,5 +3182,20 @@ export class DemographicComponent extends FormDeactivateGuardService
       control.setValue(!control.value); // Toggle between true and false
     }
   }
+  validateYearsLived(fieldId: string) {
+    const control = this.userForm.get(fieldId);
+    const yearsLived = this.userForm.controls[appConstants.APPLICANT_PLACE_OF_RESIDENCE_YEARS_LIVED_FIELD].value;
+    if (this.userAge !== undefined && this.userAge !== null && yearsLived !== undefined && yearsLived !== null) {
+      if (yearsLived >= this.userAge) {
+        this.userForm.controls[appConstants.APPLICANT_PLACE_OF_RESIDENCE_YEARS_LIVED_FIELD].setErrors({
+          yearsLivedInvalid: { message: "Years Lived should be less than the Age." }
+        });
+      } else {
+        this.userForm.controls[appConstants.APPLICANT_PLACE_OF_RESIDENCE_YEARS_LIVED_FIELD].setErrors(null);
+      }
+    }
+  }
+
+  
   
 }

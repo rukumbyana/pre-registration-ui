@@ -610,7 +610,7 @@ getPRNResponse(){
     if (response.response != null) {
         this.PRN = response.response.data.prn;
         this.amount = response.response.data.amount;
-        
+      
             } 
          
     else if (response.errors && Array.isArray(response.errors)) {

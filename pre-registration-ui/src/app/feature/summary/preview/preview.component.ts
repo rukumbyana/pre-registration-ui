@@ -376,7 +376,7 @@ export class PreviewComponent implements OnInit {
   getDocumentCategories() {
     debugger
     const applicantcode = localStorage.getItem("applicantType");
-    if (Service === appConstants.USER_SERVICE.UPDATE) {
+    
       const applicantCodesArray = applicantcode.split(","); // Convert "700,702" to ["700", "702"]
 
         return new Promise((resolve) => {
@@ -406,21 +406,6 @@ export class PreviewComponent implements OnInit {
             }
           );
         });
-    }
-    else{
-      return new Promise((resolve) => {
-        this.dataStorageService
-          .getDocumentCategories(applicantcode)
-          .subscribe((response) => {
-            this.documentTypes =
-              response[appConstants.RESPONSE].documentCategories;
-            resolve(true);
-          },
-            (error) => {
-              this.showErrorMessage(error);
-            });
-      });
-    }
   }
 
   formatDob(dob: string) {
@@ -758,7 +743,28 @@ export class PreviewComponent implements OnInit {
     }
     let url = Utils.getURL(this.router.url, "summary", 3);
     url = url + `/${this.preRegId}/acknowledgement`;
-    this.router.navigateByUrl(url);
+    const confirmationData = {
+      case: 'CONFIRMATION',
+      title: 'Proceed with Submission?',
+      message: 'This is a confirmation message to proceed with the entered user data?',
+      noButtonText: 'Discard',
+      yesButtonText: 'Ok',
+    };
+  
+    this.dialog
+      .open(DialougComponent, {
+        width: '400px',
+        data: confirmationData,
+        disableClose: true,
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result === true) {
+          this.router.navigateByUrl(url);
+        } else {
+          console.log('Cancellation aborted.');
+        }
+      });
   }
 
   //malay
