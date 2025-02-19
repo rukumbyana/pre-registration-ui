@@ -652,7 +652,7 @@ export class AcknowledgementComponent implements OnInit, OnDestroy {
     const nin = demographicData.NIN;
     const desiredService = demographicData.userService; 
     const age:number =this.dataStorageService.calculateAge(demographicData.dateOfBirthCop);
-    //console.log("my data", demographicData);
+    
   
       if (desiredService ===appConstants.USER_SERVICE.UPDATE){
         if (demographicData.isErrorNameChange==="N"  || !("isErrorNameChange" in demographicData)){
