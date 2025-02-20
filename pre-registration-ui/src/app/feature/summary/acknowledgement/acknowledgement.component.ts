@@ -643,18 +643,20 @@ export class AcknowledgementComponent implements OnInit, OnDestroy {
   }
   
   generatePaymentRefNum(demographicData: any) {
-    debugger
     const desiredService = demographicData.userService; 
     let surname;
     if(desiredService===appConstants.USER_SERVICE.UPDATE || desiredService===appConstants.USER_SERVICE.REPLACEMENT){
+
       surname = demographicData.surnameCop[0].value;
     }
     else{
       surname = demographicData.surname;
     }
     const nin = demographicData.NIN;
+
     const age:number = this.dataStorageService.calculateAge(demographicData.dateOfBirthCop);
     //console.log(age);
+
     
   
       if (desiredService ===appConstants.USER_SERVICE.UPDATE){
@@ -666,9 +668,11 @@ export class AcknowledgementComponent implements OnInit, OnDestroy {
                    this.requestBody = {
                    service: appConstants.TAX_HEADS.COP_NORMAL,
                    NIN: nin,
+
                    fullName: surname+ " " +demographicData.givenNameCop[0].value
                    };
                   console.log("consoled from generatePaymentRefNum",this.requestBody);
+
                     this.getPRNResponse();
                     // console.log("this is from the general update");
                }
@@ -677,7 +681,9 @@ export class AcknowledgementComponent implements OnInit, OnDestroy {
                this.requestBody = {
                service: appConstants.TAX_HEADS.COP_SPELLING_CORRECTION,
                NIN: nin,
+
                fullName: surname+ " " +demographicData.givenNameCop[0].value
+
                };
                console.log("consoled from generatePaymentRefNum",this.requestBody);
                if (this.requestBody.fullName &&  this.requestBody.NIN &&  this.requestBody.service) {
@@ -707,7 +713,9 @@ export class AcknowledgementComponent implements OnInit, OnDestroy {
             this.requestBody = {
               service: appConstants.TAX_HEADS.DAMAGED_CARD ,
               NIN: nin !== undefined ? nin : null,
+
               fullName: surname+ " " +demographicData.givenNameCop[0].value
+
             };
              this.getPRNResponse();
           }
