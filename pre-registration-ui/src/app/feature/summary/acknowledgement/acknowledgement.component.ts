@@ -40,6 +40,7 @@ export class AcknowledgementComponent implements OnInit, OnDestroy {
   PRN:string="";
   PRNerrorMessage="";
   amount:string="";
+  currency:string="";
   bookingDataPrimary = "";
   bookingDataSecondary = "";
   subscriptions: Subscription[] = [];
@@ -610,8 +611,8 @@ export class AcknowledgementComponent implements OnInit, OnDestroy {
       if (response.response != null) {
           this.PRN = response.response.data.prn;
           this.amount = response.response.data.amount;
-          
-              } 
+          this.currency = response.response.data.currency;
+           } 
            
       else if (response.errors && Array.isArray(response.errors)) {
               const body = {
