@@ -1305,7 +1305,7 @@ isStepVisible(step: number): boolean {
     }
 
     if(selectedFieldId=="gender"){
-      this.gender= this.userService = this.userForm.controls[selectedFieldId].value;
+      this.gender=this.userForm.controls[selectedFieldId].value;
     }
 
     let isChild = false;
@@ -3194,7 +3194,7 @@ isStepVisible(step: number): boolean {
     const control = this.userForm.get(fieldId);
     const yearsLived = this.userForm.controls[appConstants.APPLICANT_PLACE_OF_RESIDENCE_YEARS_LIVED_FIELD].value;
     if (this.userAge !== undefined && this.userAge !== null && yearsLived !== undefined && yearsLived !== null) {
-      if (yearsLived >= this.userAge) {
+      if (yearsLived > this.userAge) {
         this.userForm.controls[appConstants.APPLICANT_PLACE_OF_RESIDENCE_YEARS_LIVED_FIELD].setErrors({
           yearsLivedInvalid: { message: "Years Lived should be less than the Age." }
         });
